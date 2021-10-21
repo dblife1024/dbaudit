@@ -1,0 +1,59 @@
+version: "3"
+services:
+  elasticsearch:
+    image: elasticsearch:7.14.2
+    container_name: elasticsearch
+    environment:
+      - node.name=es01
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=elasticdocker
+    volumes:
+      - '/data1/esauditdata:/usr/share/elasticsearch/data'
+      - './elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml'
+    ports:
+      - 9200:9200
+    restart: always
+    networks:
+      - elk
+
+  kibana:
+    image: kibana:7.14.2
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=elasticdocker
+    volumes:
+      - './kibana/config:/usr/share/kibana/config'
+    ports:
+      - 5601:5601
+    restart: always
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+
+  packetbeat:
+    image: elastic/packetbeat:7.14.2
+    container_name: packetbeat
+    restart: always
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    volumes:
+      - './packetbeat/config/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml'
+    network_mode: "host"
+    command: packetbeat -e -strict.perms=false
+    depends_on:
+      - elasticsearch
+      - kibana
+
+networks:
+  elk:
+    driver: bridge
+    ipam:  
+      driver: default
+      config:
+        - subnet: 172.1.1.0/24

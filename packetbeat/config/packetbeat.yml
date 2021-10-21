@@ -1,0 +1,143 @@
+packetbeat.interfaces.device: any
+packetbeat.interfaces.snaplen: 1514
+packetbeat.interfaces.type: af_packet
+packetbeat.interfaces.buffer_size_mb: 64
+
+tags: ["mongodb", "redis", "mysql","pgsql"]
+
+
+#================================== Flows =====================================
+
+# Set `enabled: false` or comment out all options to disable flows reporting.
+packetbeat.flows:
+  # Set network flow timeout. Flow is killed if no packet is received before being
+  # timed out.
+  timeout: 30s
+
+  # Configure reporting period. If set to -1, only killed flows will be reported
+  period: 10s
+  enabled: false
+
+#========================== Transaction protocols =============================
+
+packetbeat.protocols:
+- type: icmp
+  # Enable ICMPv4 and ICMPv6 monitoring. Default: false
+  enabled: false
+
+- type: amqp
+  # Configure the ports where to listen for AMQP traffic. You can disable
+  # the AMQP protocol by commenting out the list of ports.
+  #ports: [5672]
+  enabled: false
+
+- type: cassandra
+  #Cassandra port for traffic monitoring.
+  #ports: [9042]
+  enabled: false
+
+- type: dhcpv4
+  # Configure the DHCP for IPv4 ports.
+  #ports: [67, 68]
+  enabled: false
+
+- type: dns
+  # Configure the ports where to listen for DNS traffic. You can disable
+  # the DNS protocol by commenting out the list of ports.
+  #ports: [53]
+  enabled: false
+
+- type: http
+  # Configure the ports where to listen for HTTP traffic. You can disable
+  # the HTTP protocol by commenting out the list of ports.
+  #ports: [80, 8080, 8000, 5000, 8002]
+  enabled: false
+
+- type: memcache
+  # Configure the ports where to listen for memcache traffic. You can disable
+  # the Memcache protocol by commenting out the list of ports.
+  #ports: [11211]
+  enabled: false
+
+- type: mysql
+  ports: [3306,3872]
+  processors:
+  - drop_event:
+      when:
+        or:
+          - equals:
+             method: SET
+          - equals:
+             method: SHOW
+
+- type: pgsql
+  ports: [5432]
+
+- type: redis
+  ports: [6379]
+
+- type: thrift
+  enabled: false
+
+- type: mongodb
+  ports: [27017]
+
+- type: nfs
+  # Configure the ports where to listen for NFS traffic. You can disable
+  # the NFS protocol by commenting out the list of ports.
+  # ports: [2049]
+  enabled: false
+
+- type: tls
+  # Configure the ports where to listen for TLS traffic. You can disable
+  # the TLS protocol by commenting out the list of ports.
+ # ports:
+  #  - 443   # HTTPS
+  #  - 993   # IMAPS
+  #  - 995   # POP3S
+  #  - 5223  # XMPP over SSL
+  #  - 8443
+  #  - 8883  # Secure MQTT
+  #  - 9243  # Elasticsearch
+  enabled: false
+
+setup.template.enabled: true
+setup.template.name: "packetbeat"
+setup.template.pattern: "packetbeat-*"
+setup.template.overwrite: false
+
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 0
+
+
+setup.kibana:
+  host: "localhost:5601"
+  username: "elastic"
+  password: "elasticdocker"
+
+setup.ilm.enabled: false
+setup.ilm.rollover_alias: "packetbeat"
+setup.ilm.pattern: "{now/d}"
+
+output.elasticsearch:
+  hosts: ["localhost:9200"]
+  username: "elastic"
+  password: "elasticdocker"
+  compression_level: 1
+  indices:
+    - index: "packetbeat-%{[agent.version]}-mysql-%{+yyyy.MM.dd}"
+      when.contains:
+        type: "mysql"
+    - index: "packetbeat-%{[agent.version]}-redis-%{+yyyy.MM.dd}"
+      when.contains:
+        type: "redis"
+    - index: "packetbeat-%{[agent.version]}-pgsql-%{+yyyy.MM.dd}"
+      when.contains:
+        type: "pgsql"
+    - index: "packetbeat-%{[agent.version]}-mongodb-%{+yyyy.MM.dd}"
+      when.contains:
+        type: "mongodb"
+
+
+logging.level: INFO
