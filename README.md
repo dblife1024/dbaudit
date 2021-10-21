@@ -1,5 +1,9 @@
 # 使用docker-compose部署packetbeat+es数据库审计
 
+## 使用场景
+* 快速学习packetbeat+es数据审计流程
+* 临时抓包排查业务相关SQL异常问题
+
 ## 准备环境
 
 * Docker
