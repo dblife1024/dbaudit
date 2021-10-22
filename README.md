@@ -52,3 +52,4 @@ rm -r /data1/esautditdata && rm -r packetbeat-dbaudit-compose
 * 目前使用的版本为7.14.2
 * 登陆kibana后，先创建“索引模式”，在通过Discover查看
 * 根据需求，修改 packetbeat/config/packetbeat.yml 相关模块的port，进行监听
+* 更多 https://github.com/dblife1024/dbaudit/wiki
