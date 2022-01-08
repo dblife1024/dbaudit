@@ -1,7 +1,7 @@
 version: "3"
 services:
   elasticsearch:
-    image: elasticsearch:7.14.2
+    image: elasticsearch:7.16.2
     container_name: elasticsearch
     environment:
       - node.name=es01
@@ -19,7 +19,7 @@ services:
       - elk
 
   kibana:
-    image: kibana:7.14.2
+    image: kibana:7.16.2
     container_name: kibana
     environment:
       - ELASTICSEARCH_USERNAME=elastic
@@ -36,7 +36,7 @@ services:
 
 
   packetbeat:
-    image: elastic/packetbeat:7.14.2
+    image: elastic/packetbeat:7.16.2
     container_name: packetbeat
     restart: always
     cap_add:
